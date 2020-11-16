@@ -5,6 +5,7 @@
    [dragdrop.events :as events]
    [dragdrop.views :as views]
    [dragdrop.config :as config]
+   [stylefy.core :as stylefy]
    ))
 
 
@@ -21,4 +22,5 @@
 (defn init []
   (re-frame/dispatch-sync [::events/initialize-db])
   (dev-setup)
+  (stylefy/init)
   (mount-root))
