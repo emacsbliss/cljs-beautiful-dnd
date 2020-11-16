@@ -3,6 +3,7 @@
    [re-frame.core :as re-frame]
    [dragdrop.subs :as subs]
    [dragdrop.column :refer [Column]]
+   ["react-beautiful-dnd" :refer [DragDropContext]]
    ))
 
 (defonce initial-data
@@ -29,7 +30,11 @@
 )
 
 (defn main []
-  [:div
+
+  [:> DragDropContext
+   {:onDragEnd #()}
+
+  ;; [:div
   (map (fn [col-id]
          (println "col-id: " col-id)
          (let [column (get (:columns initial-data) col-id)
@@ -42,11 +47,13 @@
          ))
        (:column-order initial-data)
    )
-   ]
+   ;; ]
+ ]
 )
 
 (defn main-panel []
   (let [name (re-frame/subscribe [::subs/name])]
     [:div
      [main]
-     ]))
+     ]
+))
