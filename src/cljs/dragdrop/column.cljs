@@ -17,8 +17,11 @@
   {:padding "8px"}
 )
 
-(def task-list-style
-  {:padding "8px"}
+(defn task-list-style [props]
+  {:padding "8px"
+   :transition "background-color 0.2s ease"
+   :background-color (if (:is-dragging-over props) "skyblue" "white")
+   }
 )
 
 (defn- container [& child]
@@ -30,13 +33,15 @@
 )
 
 (defn- task-list [props tasks placeholder]
-  [:div (use-style task-list-style props)
+  (let [style (task-list-style props)
+        new-props (dissoc props :is-dragging-over)]
+  [:div (use-style style new-props)
    (map-indexed #(task {:key (:id %2)
                  :tsk %2 :index %1})
         tasks)
 
    placeholder]
-)
+))
 
 (defn Column
   [{:keys [key column tasks]}]
@@ -47,14 +52,16 @@
     [:> Droppable
         {:droppableId key}
 
-     (fn [provided]
+     (fn [provided snapshot]
        (let [inner-ref (.-innerRef provided)
              droppable-props (-> (.-droppableProps provided)
                                 (js->clj :keywordize-keys true))
-             placeholder (.-placeholder provided)]
+             placeholder (.-placeholder provided)
+             is-dragging-over (.-isDraggingOver snapshot)]
 
        (ra/as-element
-        [task-list (merge droppable-props {:ref inner-ref})
+        [task-list (merge droppable-props {:ref inner-ref
+                                           :is-dragging-over is-dragging-over})
          tasks placeholder])
        ))
      ]
