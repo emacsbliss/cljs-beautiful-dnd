@@ -7,15 +7,20 @@
    ["react-beautiful-dnd" :refer [DragDropContext]]
    ))
 
+(defn on-drag-start []
+  (set! (.. js/document -body -style -color) "orange")
+  (set! (.. js/document -body -style -transition) "background-color 0.2s ease")
+)
+
 (defn on-drag-end [result]
  (let [columns (rf/subscribe [::subs/columns])
-  ;; (let [{:keys [destination source draggableId]}
        {:keys [destination source draggableId]}
         (js->clj result :keywordize-keys true)
         src-droppable-id (:droppableId source)
         dest-droppable-id (:droppableId destination)
         src-index (:index source)
         dest-index (:index destination)]
+    (set! (.. js/document -body -style -color) "inherit")
     (println "destination: " destination)
     (println "dest-droppable-id: " dest-droppable-id)
     (println "src-droppable-id: " src-droppable-id)
@@ -50,7 +55,9 @@
         col-order @(rf/subscribe [::subs/column-order])]
 
     [:> DragDropContext
-    {:onDragEnd on-drag-end}
+     {:onDragEnd on-drag-end
+      :onDragStart on-drag-start
+     }
 
       (map (fn [col-id]
             (println "col-id: " col-id)
