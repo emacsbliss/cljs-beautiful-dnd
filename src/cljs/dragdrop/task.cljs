@@ -11,7 +11,17 @@
    :border-radius "2px"
    :padding "8px"
    :background-color (if (:is-dragging state) "lightgreen" "white")
+   :display "flex"
 })
+
+(def handle-style
+  {:width "20px"
+   :height "20px"
+   :background-color "orange"
+   :border-radius "4px"
+   :margin-right "8px"
+   }
+)
 
 (defn- container [props & child]
   ;; NOTE: have to separate style with other things in pros
@@ -41,15 +51,16 @@
        (let [inner-ref (.-innerRef provided)
              draggable-props (-> (.-draggableProps provided)
                                 (js->clj :keywordize-keys true))
-             drag-hanlder-props (-> (.-dragHandleProps provided)
+             drag-handler-props (-> (.-dragHandleProps provided)
                                 (js->clj :keywordize-keys true))
              is-dragging (.-isDragging snapshot)]
 
        (ra/as-element
         [container (-> {:ref inner-ref
                         :is-dragging is-dragging}
-                           (merge draggable-props)
-                           (merge drag-hanlder-props))
+                           (merge draggable-props))
+         ^{:key (str "handle-" key)}
+         [:div (use-style handle-style drag-handler-props)]
         (:content tsk)])
        ))
   ]
