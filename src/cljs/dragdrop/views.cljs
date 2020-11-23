@@ -2,15 +2,25 @@
   (:require
    [re-frame.core :as rf]
    [dragdrop.subs :as subs]
+   [goog.string :as gstr]
    [dragdrop.events :as events]
    [dragdrop.column :refer [Column]]
    ["react-beautiful-dnd" :refer [DragDropContext]]
-   ))
+
+   [clojure.string :as str]))
 
 (defn on-drag-start []
   (set! (.. js/document -body -style -color) "orange")
   (set! (.. js/document -body -style -transition) "background-color 0.2s ease")
 )
+
+(defn on-drag-update [tasks update]
+  (let [{:keys [destination]} (js->clj update :keywordize-keys true)
+        opacity (if destination
+                  (/ (:index destination) (count tasks))
+                  0)]
+    (set! (.. js/document -body -style -backgroundColor) (gstr/format "rgba(153,141,217," opacity ")"))
+))
 
 (defn on-drag-end [result]
  (let [columns (rf/subscribe [::subs/columns])
@@ -21,17 +31,10 @@
         src-index (:index source)
         dest-index (:index destination)]
     (set! (.. js/document -body -style -color) "inherit")
-    (println "destination: " destination)
-    (println "dest-droppable-id: " dest-droppable-id)
-    (println "src-droppable-id: " src-droppable-id)
-    (println "src-index: " src-index)
-    (println "dest-index: " dest-index)
     (when (and destination
                (or (not= src-droppable-id dest-droppable-id)
                    (not= src-index dest-index)))
-      (println "let us do some work")
       (let [column ((keyword src-droppable-id) @columns)]
-        (println "column here: " column)
         (rf/dispatch [::events/swap-task
                       src-droppable-id src-index dest-index])
       )
@@ -56,6 +59,7 @@
 
     [:> DragDropContext
      {:onDragEnd on-drag-end
+      :onDragUpdate #(on-drag-update db-tasks %)
       :onDragStart on-drag-start
      }
 
